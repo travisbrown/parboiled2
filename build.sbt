@@ -1,5 +1,3 @@
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-import scalariform.formatter.preferences._
 import scala.xml.transform._
 import scala.xml.{Node => XNode, NodeSeq}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
@@ -34,14 +32,6 @@ val commonSettings = Seq(
     "-Xlint",
     "-language:_",
     "-Xlog-reflective-calls"))
-
-val formattingSettings = scalariformSettings ++ Seq(
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value
-    .setPreference(RewriteArrowSymbols, true)
-    .setPreference(AlignParameters, true)
-    .setPreference(AlignSingleLineCaseStatements, true)
-    .setPreference(DoubleIndentClassDeclaration, true)
-    .setPreference(PreserveDanglingCloseParenthesis, true))
 
 val publishingSettings = Seq(
   publishMavenStyle := true,
@@ -93,7 +83,6 @@ lazy val parboiled = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .dependsOn(parboiledCore)
   .settings(commonSettings)
-  .settings(formattingSettings)
   .settings(publishingSettings)
   .jvmSettings(
     mappings in (Compile, packageBin) ++= (mappings in (parboiledCoreJVM.project, Compile, packageBin)).value,
@@ -121,7 +110,6 @@ lazy val generateActionOps = taskKey[Seq[File]]("Generates the ActionOps boilerp
 
 lazy val parboiledCore = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("parboiled-core"))
   .settings(commonSettings)
-  .settings(formattingSettings)
   .settings(noPublishingSettings)
   .settings(
     libraryDependencies ++= Seq(scalaReflect(scalaVersion.value), specs2MatcherExtra.value, specs2ScalaCheck.value),
