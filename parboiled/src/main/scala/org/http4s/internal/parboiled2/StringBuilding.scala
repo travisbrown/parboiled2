@@ -28,7 +28,7 @@ package org.http4s.internal.parboiled2
  *
  * Mixing this trait into your parser gives you a simple facility to support this.
  */
-private[http4s] trait StringBuilding { this: Parser ⇒
+private[http4s] trait StringBuilding { this: Parser =>
   protected val sb = new java.lang.StringBuilder
 
   def clearSB(): Rule0 = rule { run(sb.setLength(0)) }
