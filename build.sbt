@@ -2,12 +2,13 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import scalariform.formatter.preferences._
 import scala.xml.transform._
 import scala.xml.{Node => XNode, NodeSeq}
-import org.scalajs.sbtplugin.cross.CrossType
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import sbtcrossproject.CrossPlugin.autoImport._
 
 val commonSettings = Seq(
   version := "1.0.1-SNAPSHOT",
-  scalaVersion := "2.11.11",
-  crossScalaVersions := Seq("2.11.11", "2.12.3"),
+  scalaVersion := "2.12.8",
+  crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0-M5"),
   organization := "org.http4s",
   homepage := Some(new URL("http://parboiled.org")),
   description := "Fork of parboiled2 for http4s, sans shapeless dependency",
@@ -19,6 +20,12 @@ val commonSettings = Seq(
     "-target", "1.6",
     "-Xlint:unchecked",
     "-Xlint:deprecation"),
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v <= 11 => Seq("-target:jvm-1.6")
+      case _ => Nil
+    }
+  },
   scalacOptions ++= List(
     "-encoding", "UTF-8",
     "-feature",
@@ -26,7 +33,6 @@ val commonSettings = Seq(
     "-deprecation",
     "-Xlint",
     "-language:_",
-    "-target:jvm-1.6",
     "-Xlog-reflective-calls"))
 
 val formattingSettings = scalariformSettings ++ Seq(
@@ -69,22 +75,26 @@ val noPublishingSettings = Seq(
 
 /////////////////////// DEPENDENCIES /////////////////////////
 
-def scalaReflect(v: String) = "org.scala-lang"  %  "scala-reflect"        % v       % "provided"
-val specs2MatcherExtra      = "org.specs2"      %% "specs2-matcher-extra" % "3.8.7" % "test"
-val specs2ScalaCheck        = "org.specs2"      %% "specs2-scalacheck"    % "3.8.7" % "test"
+def scalaReflect(v: String) = "org.scala-lang"  %  "scala-reflect"     % v       % "provided"
+val specs2MatcherExtra      = Def.setting("org.specs2"      %%% "specs2-matcher-extra" % "4.4.1" % "test")
+val specs2ScalaCheck        = Def.setting("org.specs2"      %%% "specs2-scalacheck"    % "4.4.1" % "test")
 
 /////////////////////// PROJECTS /////////////////////////
 
 lazy val root = project.in(file("."))
   .aggregate(parboiledJVM, parboiledJS)
   .aggregate(parboiledCoreJVM, parboiledCoreJS)
-  .settings(noPublishingSettings: _*)
+  .settings(commonSettings)
+  .settings(noPublishingSettings)
 
-lazy val parboiled = crossProject.crossType(CrossType.Pure)
+lazy val parboiledJVM = parboiled.jvm
+lazy val parboiledJS = parboiled.js
+lazy val parboiled = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .dependsOn(parboiledCore)
-  .settings(commonSettings: _*)
-  .settings(formattingSettings: _*)
-  .settings(publishingSettings: _*)
+  .settings(commonSettings)
+  .settings(formattingSettings)
+  .settings(publishingSettings)
   .jvmSettings(
     mappings in (Compile, packageBin) ++= (mappings in (parboiledCoreJVM.project, Compile, packageBin)).value,
     mappings in (Compile, packageSrc) ++= (mappings in (parboiledCoreJVM.project, Compile, packageSrc)).value,
@@ -96,7 +106,7 @@ lazy val parboiled = crossProject.crossType(CrossType.Pure)
     mappings in (Compile, packageDoc) ++= (mappings in (parboiledCoreJS.project, Compile, packageDoc)).value
   )
   .settings(
-    libraryDependencies ++= Seq(scalaReflect(scalaVersion.value), specs2MatcherExtra),
+    libraryDependencies ++= Seq(scalaReflect(scalaVersion.value), specs2MatcherExtra.value),
     mappings in (Compile, packageBin) ~= (_.groupBy(_._2).toSeq.map(_._2.head)), // filter duplicate outputs
     mappings in (Compile, packageDoc) ~= (_.groupBy(_._2).toSeq.map(_._2.head)), // filter duplicate outputs
     pomPostProcess := { // we need to remove the dependency onto the parboiledCore module from the POM
@@ -107,17 +117,14 @@ lazy val parboiled = crossProject.crossType(CrossType.Pure)
     }
   )
 
-lazy val parboiledJVM = parboiled.jvm
-lazy val parboiledJS = parboiled.js
-
 lazy val generateActionOps = taskKey[Seq[File]]("Generates the ActionOps boilerplate source file")
 
-lazy val parboiledCore = crossProject.crossType(CrossType.Pure).in(file("parboiled-core"))
-  .settings(commonSettings: _*)
-  .settings(formattingSettings: _*)
-  .settings(noPublishingSettings: _*)
+lazy val parboiledCore = crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("parboiled-core"))
+  .settings(commonSettings)
+  .settings(formattingSettings)
+  .settings(noPublishingSettings)
   .settings(
-    libraryDependencies ++= Seq(scalaReflect(scalaVersion.value), specs2MatcherExtra, specs2ScalaCheck),
+    libraryDependencies ++= Seq(scalaReflect(scalaVersion.value), specs2MatcherExtra.value, specs2ScalaCheck.value),
     generateActionOps := ActionOpsBoilerplate((sourceManaged in Compile).value, streams.value),
     (sourceGenerators in Compile) += generateActionOps.taskValue)
 
