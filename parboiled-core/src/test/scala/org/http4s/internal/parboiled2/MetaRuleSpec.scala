@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009-2013 Mathias Doenitz, Alexander Myltsev
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,18 +16,23 @@
 
 package org.http4s.internal.parboiled2
 
-class MetaRuleSpec extends TestParserSpec {
+import utest._
 
-  "Rule transformation should be possible" >> {
+object MetaRuleSpec extends TestParserSpec {
 
-    "using vals and `run`" in new TestParser0 {
-      val ab = () => rule { "ab" }
-      val cd = () => rule { "cd" }
-      def targetRule = rule { bracketed(ab) ~ bracketed(cd) }
-      def bracketed(inner: () => Rule0) = rule { '[' ~ inner() ~ ']' }
+  val tests = Tests {
 
-      "[ab][cd]" must beMatched
-      "abcd" must beMismatched
+    "Rule transformation should be possible" - {
+
+      "using vals and `run`" - new TestParser0 {
+        val ab                            = () => rule { "ab" }
+        val cd                            = () => rule { "cd" }
+        def targetRule                    = rule { bracketed(ab) ~ bracketed(cd) }
+        def bracketed(inner: () => Rule0) = rule { '[' ~ inner() ~ ']' }
+
+        "[ab][cd]" must beMatched
+        "abcd" must beMismatched
+      }
     }
   }
 }

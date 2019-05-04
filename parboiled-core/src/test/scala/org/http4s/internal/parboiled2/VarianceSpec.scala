@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009-2013 Mathias Doenitz, Alexander Myltsev
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,25 @@
 
 package org.http4s.internal.parboiled2
 
-import org.specs2.execute._
-import org.specs2.execute.Typecheck.typecheck
-import org.specs2.matcher.TypecheckMatchers
+ // The whole point is to stay independent of a particular shapeless version
+import org.specs2.execute.Typecheck.{apply => illTyped}
+
 import support._
 
-class VarianceSpec extends TestParserSpec with TypecheckMatchers {
+//// pure compile-time-only test
+class VarianceSpec {
 
-  "The Parsing DSL" should
+  // the Parsing DSL should
   {
 
-    "honor contravariance on the 1st type param of the `Rule` type" in {
+    // honor contravariance on the 1st type param of the `Rule` type
+    {
       // valid example
       test {
         abstract class Par extends Parser {
-          def A: Rule2[String, Int] = ???
+          def A: Rule2[String, Int]   = ???
           def B: PopRule[Any :: HNil] = ???
-          def C: Rule1[String] = rule { A ~ B }
+          def C: Rule1[String]        = rule { A ~ B }
         }
         ()
       }
@@ -50,27 +52,28 @@ class VarianceSpec extends TestParserSpec with TypecheckMatchers {
       // invalid example 2
       test {
         abstract class Par extends Parser {
-          def A: Rule2[String, Any] = ???
+          def A: Rule2[String, Any]   = ???
           def B: PopRule[Int :: HNil] = ???
         }
-        typecheck("""class P extends Par { def C = rule { A ~ B } }""") must failWith("Illegal rule composition")
+        illTyped("""class P extends Par { def C = rule { A ~ B } }""") // "Illegal rule composition"
       }
 
       // invalid example 3
       test {
         abstract class Par extends Parser {
-          def A: Rule1[String] = ???
+          def A: Rule1[String]        = ???
           def B: PopRule[Int :: HNil] = ???
         }
-        typecheck("""class P extends Par { def C = rule { A ~ B } }""") must failWith("Illegal rule composition")
+        illTyped("""class P extends Par { def C = rule { A ~ B } }""") // "Illegal rule composition"
       }
     }
 
-    "honor covariance on the 2nd type param of the `Rule` type" in {
+    // honor covariance on the 2nd type param of the `Rule` type
+    {
       // valid example
       test {
         abstract class Par extends Parser {
-          def A: Rule0 = ???
+          def A: Rule0      = ???
           def B: Rule1[Int] = ???
           def C: Rule1[Any] = rule { A ~ B }
         }
@@ -79,13 +82,13 @@ class VarianceSpec extends TestParserSpec with TypecheckMatchers {
       // invalid example
       test {
         abstract class Par extends Parser {
-          def A: Rule0 = ???
+          def A: Rule0      = ???
           def B: Rule1[Any] = ???
         }
-        typecheck("""class P extends Par { def C: Rule1[Int] = rule { A ~ B } }""") must failWith("type mismatch;.*")
+        illTyped("""class P extends Par { def C: Rule1[Int] = rule { A ~ B } }""") // "type mismatch;.*"
       }
     }
   }
 
-  def test[A](x: => A): A = x
+  def test(x: Any): Unit = () // prevent "a pure expression does nothing in statement position" warnings
 }

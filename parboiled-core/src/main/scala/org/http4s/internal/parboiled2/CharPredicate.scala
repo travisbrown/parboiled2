@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009-2013 Mathias Doenitz, Alexander Myltsev
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,9 +23,9 @@ private[http4s] sealed abstract class CharPredicate extends (Char => Boolean) {
   import CharPredicate._
 
   /**
-   * Determines wether this CharPredicate is an instance of the high-performance,
-   * constant-time `CharPredicate.MaskBased` implementation.
-   */
+    * Determines wether this CharPredicate is an instance of the high-performance,
+    * constant-time `CharPredicate.MaskBased` implementation.
+    */
   def isMaskBased: Boolean = this.isInstanceOf[MaskBased]
 
   def asMaskBased: MaskBased =
@@ -39,8 +39,8 @@ private[http4s] sealed abstract class CharPredicate extends (Char => Boolean) {
   def --(that: CharPredicate): CharPredicate
   def --(chars: Seq[Char]): CharPredicate
 
-  def ++(char: Char): CharPredicate = this ++ (char :: Nil)
-  def --(char: Char): CharPredicate = this -- (char :: Nil)
+  def ++(char: Char): CharPredicate    = this ++ (char :: Nil)
+  def --(char: Char): CharPredicate    = this -- (char :: Nil)
   def ++(chars: String): CharPredicate = this ++ chars.toCharArray
   def --(chars: String): CharPredicate = this -- chars.toCharArray
 
@@ -49,7 +49,7 @@ private[http4s] sealed abstract class CharPredicate extends (Char => Boolean) {
   def negated: CharPredicate = this match {
     case Empty => All
     case All   => Empty
-    case x     => from(c ⇒ !x(c))
+    case x     => from(c => !x(c))
   }
 
   def matchesAny(string: String): Boolean = {
@@ -98,19 +98,19 @@ private[http4s] sealed abstract class CharPredicate extends (Char => Boolean) {
 
 private[http4s] object CharPredicate {
   val Empty: CharPredicate = MaskBased(0L, 0L)
-  val All: CharPredicate = from(_ => true)
-  val LowerAlpha = CharPredicate('a' to 'z')
-  val UpperAlpha = CharPredicate('A' to 'Z')
-  val Alpha = LowerAlpha ++ UpperAlpha
-  val Digit = CharPredicate('0' to '9')
-  val Digit19 = CharPredicate('1' to '9')
-  val AlphaNum = Alpha ++ Digit
-  val LowerHexLetter = CharPredicate('a' to 'f')
-  val UpperHexLetter = CharPredicate('A' to 'F')
-  val HexLetter = LowerHexLetter ++ UpperHexLetter
-  val HexDigit = Digit ++ HexLetter
-  val Visible = CharPredicate('\u0021' to '\u007e')
-  val Printable = Visible ++ ' '
+  val All: CharPredicate   = from(_ => true)
+  val LowerAlpha           = CharPredicate('a' to 'z')
+  val UpperAlpha           = CharPredicate('A' to 'Z')
+  val Alpha                = LowerAlpha ++ UpperAlpha
+  val Digit                = CharPredicate('0' to '9')
+  val Digit19              = CharPredicate('1' to '9')
+  val AlphaNum             = Alpha ++ Digit
+  val LowerHexLetter       = CharPredicate('a' to 'f')
+  val UpperHexLetter       = CharPredicate('A' to 'F')
+  val HexLetter            = LowerHexLetter ++ UpperHexLetter
+  val HexDigit             = Digit ++ HexLetter
+  val Visible              = CharPredicate('\u0021' to '\u007e')
+  val Printable            = Visible ++ ' '
 
   def from(predicate: Char => Boolean): CharPredicate =
     predicate match {
@@ -118,14 +118,17 @@ private[http4s] object CharPredicate {
       case x                => General(x)
     }
 
-  def apply(magnets: ApplyMagnet*): CharPredicate = magnets.foldLeft(Empty) { (a, m) => a ++ m.predicate }
+  def apply(magnets: ApplyMagnet*): CharPredicate = magnets.foldLeft(Empty) { (a, m) =>
+    a ++ m.predicate
+  }
 
   class ApplyMagnet(val predicate: CharPredicate)
+
   object ApplyMagnet {
     implicit def fromPredicate(predicate: Char => Boolean): ApplyMagnet = new ApplyMagnet(from(predicate))
-    implicit def fromChar(c: Char): ApplyMagnet = fromChars(c :: Nil)
-    implicit def fromCharArray(array: Array[Char]): ApplyMagnet = fromChars(array)
-    implicit def fromString(chars: String): ApplyMagnet = fromChars(chars)
+    implicit def fromChar(c: Char): ApplyMagnet                         = fromChars(c :: Nil)
+    implicit def fromCharArray(array: Array[Char]): ApplyMagnet         = fromChars(array)
+    implicit def fromString(chars: String): ApplyMagnet                 = fromChars(chars)
     implicit def fromChars(chars: Seq[Char]): ApplyMagnet =
       chars match {
         case _ if chars.size < 128 & !chars.exists(unmaskable) =>
@@ -143,6 +146,7 @@ private[http4s] object CharPredicate {
 
   // efficient handling of 7bit-ASCII chars
   case class MaskBased private[CharPredicate] (lowMask: Long, highMask: Long) extends CharPredicate {
+
     def apply(c: Char): Boolean = {
       val mask = if (c < 64) lowMask else highMask
       ((1L << c.toLong) & ((c - 128) >> 31) & mask) != 0L // branchless for `(c < 128) && (mask & (1L << c) != 0)`
@@ -202,9 +206,12 @@ private[http4s] object CharPredicate {
             rec(mask, offset, bit + 1, ix + 1)
           } else rec(mask, offset, bit + 1, ix)
         } else ix
-      rec(highMask, 64, java.lang.Long.numberOfTrailingZeros(highMask),
-        rec(lowMask, 0, java.lang.Long.numberOfTrailingZeros(lowMask), startIx))
-      ()
+      rec(
+        highMask,
+        64,
+        java.lang.Long.numberOfTrailingZeros(highMask),
+        rec(lowMask, 0, java.lang.Long.numberOfTrailingZeros(lowMask), startIx)
+      )
     }
 
     override def toString(): String = "CharPredicate.MaskBased(" + new String(toArray) + ')'
@@ -232,8 +239,9 @@ private[http4s] object CharPredicate {
       case _     => this and that
     }
 
-    override def toString(): String = s"CharPredicate.RangeBased(start = ${range.start}, end = ${range.end}, " +
-      s"step = ${range.step.toInt}, inclusive = ${range.isInclusive})"
+    override def toString(): String =
+      s"CharPredicate.RangeBased(start = ${range.start}, end = ${range.end}, " +
+        s"step = ${range.step.toInt}, inclusive = ${range.isInclusive})"
   }
 
   class ArrayBased private[CharPredicate] (private val chars: Array[Char]) extends CharPredicate {
@@ -279,8 +287,8 @@ private[http4s] object CharPredicate {
 
     def ++(that: CharPredicate): CharPredicate = that match {
       case Empty                  => this
-      case General(thatPredicate) => from(c ⇒ predicate(c) || thatPredicate(c))
-      case _                      => from(c ⇒ predicate(c) || that(c))
+      case General(thatPredicate) => from(c => predicate(c) || thatPredicate(c))
+      case _                      => from(c => predicate(c) || that(c))
     }
 
     def ++(chars: Seq[Char]): CharPredicate =
@@ -291,8 +299,8 @@ private[http4s] object CharPredicate {
 
     def --(that: CharPredicate): CharPredicate = that match {
       case Empty                  => this
-      case General(thatPredicate) => from(c ⇒ predicate(c) && !thatPredicate(c))
-      case _                      => from(c ⇒ predicate(c) && !that(c))
+      case General(thatPredicate) => from(c => predicate(c) && !thatPredicate(c))
+      case _                      => from(c => predicate(c) && !that(c))
     }
 
     def --(chars: Seq[Char]): CharPredicate =
@@ -303,7 +311,7 @@ private[http4s] object CharPredicate {
 
     def intersect(that: CharPredicate) = that match {
       case Empty                  => Empty
-      case General(thatPredicate) => from(c ⇒ predicate(c) && that(c))
+      case General(thatPredicate) => from(c => predicate(c) && that(c))
       case _                      => this and that
     }
 

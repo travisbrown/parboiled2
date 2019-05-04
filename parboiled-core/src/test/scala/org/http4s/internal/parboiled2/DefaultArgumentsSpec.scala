@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009-2013 Mathias Doenitz, Alexander Myltsev
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,11 @@
 
 package org.http4s.internal.parboiled2
 
-import org.specs2.mutable._
+import utest._
+
 import scala.util.Success
 
-class DefaultArgumentsSpec extends Specification {
+object DefaultArgumentsSpec extends TestSuite {
 
   case class A(a: Int = 0, b: Int = 1)
 
@@ -27,9 +28,11 @@ class DefaultArgumentsSpec extends Specification {
     def Foo: Rule1[A] = rule { "foo" ~ push(A(b = 2)) }
   }
 
-  "The `push` action" should {
-    "properly handle default arguments" in {
-      new Foo("foo").Foo.run() === Success(A(0, 2))
+  val tests = Tests {
+    "The `push` action" - {
+      "properly handle default arguments" - {
+        new Foo("foo").Foo.run() ==> Success(A(0, 2))
+      }
     }
   }
 }
