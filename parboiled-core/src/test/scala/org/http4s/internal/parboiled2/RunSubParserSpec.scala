@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009-2013 Mathias Doenitz, Alexander Myltsev
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,35 +16,43 @@
 
 package org.http4s.internal.parboiled2
 
-class RunSubParserSpec extends TestParserSpec {
+import utest._
+
+object RunSubParserSpec extends TestParserSpec {
 
   class SubParser(val input: ParserInput) extends Parser {
+
     def IntNumber = rule {
       capture(oneOrMore(CharPredicate.Digit)) ~> (_.toInt)
     }
   }
 
   abstract class ParserWithSubParser extends TestParser1[Int] {
+
     def InputLine = rule {
       oneOrMore(runSubParser(new SubParser(_).IntNumber)).separatedBy(',') ~ EOI ~> (_.sum)
     }
   }
 
-  "`runSubParser`" should {
-    "work as expected" in new ParserWithSubParser {
-      def targetRule = InputLine
+  val tests = Tests {
 
-      "12" must beMatchedWith(12)
-      "43,8" must beMatchedWith(51)
+    "`runSubParser` should" - {
+      "work as expected" - new ParserWithSubParser {
+        def targetRule = InputLine
 
-      "1234,a" must beMismatchedWithErrorMsg(
-        """Invalid input 'a', expected IntNumber (line 1, column 6):
-          |1234,a
-          |     ^
-          |
-          |1 rule mismatched at error location:
-          |  /InputLine/ +:-5 / runSubParser /IntNumber/ capture / + / Digit:<CharPredicate>
-          |""")
+        "12" must beMatchedWith(12)
+        "43,8" must beMatchedWith(51)
+
+        "1234,a" must beMismatchedWithErrorMsg(
+          """Invalid input 'a', expected IntNumber (line 1, column 6):
+            |1234,a
+            |     ^
+            |
+            |1 rule mismatched at error location:
+            |  /InputLine/ +:-5 / runSubParser /IntNumber/ capture / + / Digit:<CharPredicate>
+            |"""
+        )
+      }
     }
   }
 }

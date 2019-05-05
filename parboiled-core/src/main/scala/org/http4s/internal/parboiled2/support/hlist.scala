@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-16 Miles Sabin
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

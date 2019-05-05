@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009-2013 Mathias Doenitz, Alexander Myltsev
+ * Copyright 2009 org.http4s
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,12 @@
 package org.http4s.internal.parboiled2.nestedpackage
 
 import scala.util.Success
-import org.specs2.mutable.Specification
+import utest._
 
-class AlienPackageParserSpec extends Specification {
+object AlienPackageParserSpec extends TestSuite {
 
   abstract class AbstractParser(val input: org.http4s.internal.parboiled2.ParserInput) extends org.http4s.internal.parboiled2.Parser {
-    import org.http4s.internal.parboiled2.{ Rule1, CharPredicate }
+    import org.http4s.internal.parboiled2.{CharPredicate, Rule1}
 
     def foo: Rule1[String] = rule { capture("foo" ~ zeroOrMore(CharPredicate.Digit)) }
   }
@@ -31,9 +31,11 @@ class AlienPackageParserSpec extends Specification {
     def Go = rule { foo ~ EOI }
   }
 
-  "Parsers in files that dont explicitly import org.http4s.internal.parboiled2._" should {
-    "compile" in {
-      new FooParser("foo123").Go.run() === Success("foo123")
+  val tests = Tests {
+    "Parsers in files that dont explicitly import org.http4s.internal.parboiled2._" - {
+      "compile" - {
+        new FooParser("foo123").Go.run() ==> Success("foo123")
+      }
     }
   }
 }
