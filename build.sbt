@@ -133,7 +133,7 @@ lazy val parboiledCore = crossProject(JSPlatform, JVMPlatform)
   .in(file("parboiled-core"))
   .enablePlugins(AutomateHeaderPlugin)
   .settings(commonSettings)
-  .settings(publishArtifact := false)
+  .settings(skip in publish := true)
   .settings(utestSettings)
   .settings(
     libraryDependencies ++= Seq(`scala-reflect`.value, `specs2-common`.value, utest.value),
