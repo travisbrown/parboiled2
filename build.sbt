@@ -15,7 +15,7 @@ val commonSettings = Seq(
   scmInfo := Some(ScmInfo(url("https://github.com/sirthias/parboiled2"), "scm:git:git@github.com:sirthias/parboiled2.git")),
 
   scalaVersion := "2.12.8",
-  crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0-RC1"),
+  crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
 
   scalacOptions ++= Seq(
     "-deprecation",
@@ -75,10 +75,20 @@ val utestSettings = Seq(testFrameworks := Seq(new TestFramework("utest.runner.Fr
 
 /////////////////////// DEPENDENCIES /////////////////////////
 
-val utest            = Def.setting("com.lihaoyi"    %%% "utest"         % "0.6.7"            % Test)
+val utestVersion = Def.setting(
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, v)) if v <= 11 =>
+      "0.6.8"
+    case _ =>
+      "0.6.9"
+  }
+)
+
+val utest            = Def.setting("com.lihaoyi"    %%% "utest"         % utestVersion.value % Test)
 val scalaCheck       = Def.setting("org.scalacheck" %%% "scalacheck"    % "1.14.0"           % Test)
 val `scala-reflect`  = Def.setting("org.scala-lang" %   "scala-reflect" % scalaVersion.value % "provided")
 val `specs2-common`  = Def.setting("org.specs2"     %%% "specs2-common" % "4.5.1"            % Test)
+
 /////////////////////// PROJECTS /////////////////////////
 
 lazy val root = project.in(file("."))
