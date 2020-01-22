@@ -14,8 +14,8 @@ val commonSettings = Seq(
   unmanagedResources in Compile += baseDirectory.value.getParentFile.getParentFile / "LICENSE",
   scmInfo := Some(ScmInfo(url("https://github.com/sirthias/parboiled2"), "scm:git:git@github.com:sirthias/parboiled2.git")),
 
-  scalaVersion := "2.12.8",
-  crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0"),
+  scalaVersion := "2.12.10",
+  crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.1"),
 
   scalacOptions ++= Seq(
     "-deprecation",
@@ -85,7 +85,7 @@ val utestVersion = Def.setting(
 )
 
 val utest            = Def.setting("com.lihaoyi"    %%% "utest"         % utestVersion.value % Test)
-val scalaCheck       = Def.setting("org.scalacheck" %%% "scalacheck"    % "1.14.0"           % Test)
+val scalaCheck       = Def.setting("org.scalacheck" %%% "scalacheck"    % "1.14.3"           % Test)
 val `scala-reflect`  = Def.setting("org.scala-lang" %   "scala-reflect" % scalaVersion.value % "provided")
 val `specs2-common`  = Def.setting("org.specs2"     %%% "specs2-common" % "4.5.1"            % Test)
 
