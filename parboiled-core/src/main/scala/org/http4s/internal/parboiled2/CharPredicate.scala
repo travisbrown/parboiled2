@@ -19,7 +19,8 @@ package org.http4s.internal.parboiled2
 import scala.annotation.tailrec
 import scala.collection.immutable.NumericRange
 
-private[http4s] sealed abstract class CharPredicate extends (Char => Boolean) {
+//private[http4s]
+sealed abstract class CharPredicate extends (Char => Boolean) {
   import CharPredicate._
 
   /**
@@ -96,7 +97,8 @@ private[http4s] sealed abstract class CharPredicate extends (Char => Boolean) {
     if (this == Empty) Empty else from(c => this(c) && !that(c))
 }
 
-private[http4s] object CharPredicate {
+//private[http4s]
+object CharPredicate {
   val Empty: CharPredicate = MaskBased(0L, 0L)
   val All: CharPredicate   = from(_ => true)
   val LowerAlpha           = CharPredicate('a' to 'z')

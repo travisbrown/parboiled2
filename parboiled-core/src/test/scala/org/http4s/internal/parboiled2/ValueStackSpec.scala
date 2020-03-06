@@ -18,7 +18,7 @@ package org.http4s.internal.parboiled2
 
 import org.http4s.internal.parboiled2.support.{ HList, HNil }
 import utest.{intercept, _}
-
+/*
 object ValueStackSpec extends TestSuite {
 
   val tests = Tests {
@@ -171,3 +171,4 @@ object ValueStackSpec extends TestSuite {
 
   class TestStack(stackSize: Int) extends ValueStack(stackSize, stackSize)
 }
+*/

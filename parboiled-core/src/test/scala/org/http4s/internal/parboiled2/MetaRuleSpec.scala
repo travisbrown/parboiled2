@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 object MetaRuleSpec extends TestParserSpec {
 
   val tests = Tests {
@@ -36,3 +36,4 @@ object MetaRuleSpec extends TestParserSpec {
     }
   }
 }
+*/

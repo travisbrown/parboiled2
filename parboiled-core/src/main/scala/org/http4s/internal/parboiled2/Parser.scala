@@ -23,7 +23,8 @@ import scala.util.{Failure, Success, Try}
 import scala.util.control.{NoStackTrace, NonFatal}
 import org.http4s.internal.parboiled2.support._
 
-private[http4s] abstract class Parser(initialValueStackSize: Int = 16, maxValueStackSize: Int = 1024) extends RuleDSL {
+//private[http4s]
+abstract class Parser(initialValueStackSize: Int = 16, maxValueStackSize: Int = 1024) extends RuleDSL with ParserMacroMethods {
   import Parser._
 
   require(maxValueStackSize <= 65536, "`maxValueStackSize` > 2^16 is not supported") // due to current snapshot design
@@ -32,18 +33,6 @@ private[http4s] abstract class Parser(initialValueStackSize: Int = 16, maxValueS
     * The input this parser instance is running against.
     */
   def input: ParserInput
-
-  /**
-    * Converts a compile-time only rule definition into the corresponding rule method implementation.
-    */
-  def rule[I <: HList, O <: HList](r: Rule[I, O]): Rule[I, O] = macro ParserMacros.ruleImpl[I, O]
-
-  /**
-    * Converts a compile-time only rule definition into the corresponding rule method implementation
-    * with an explicitly given name.
-    */
-  def namedRule[I <: HList, O <: HList](name: String)(r: Rule[I, O]): Rule[I, O] =
-    macro ParserMacros.namedRuleImpl[I, O]
 
   /**
     * The index of the next (yet unmatched) input character.
@@ -525,7 +514,8 @@ private[http4s] abstract class Parser(initialValueStackSize: Int = 16, maxValueS
   }
 }
 
-private[http4s] object Parser {
+//private[http4s]
+object Parser {
 
   trait DeliveryScheme[L <: HList] {
     type Result
@@ -535,7 +525,7 @@ private[http4s] object Parser {
   }
 
   object DeliveryScheme extends AlternativeDeliverySchemes {
-    implicit def Try[L <: HList, Out](implicit unpack: Unpack.Aux[L, Out]) =
+    implicit def Try[L <: HList, Out](implicit unpack: Unpack.Aux[L, Out]): DeliveryScheme[L] { type Result = Try[Out] } =
       new DeliveryScheme[L] {
         type Result = Try[Out]
         def success(result: L)            = Success(unpack(result))
@@ -544,14 +534,14 @@ private[http4s] object Parser {
       }
   }
   sealed abstract class AlternativeDeliverySchemes {
-    implicit def Either[L <: HList, Out](implicit unpack: Unpack.Aux[L, Out]) =
+    implicit def Either[L <: HList, Out](implicit unpack: Unpack.Aux[L, Out]): DeliveryScheme[L] { type Result = Either[ParseError, Out] } =
       new DeliveryScheme[L] {
         type Result = Either[ParseError, Out]
         def success(result: L)            = Right(unpack(result))
         def parseError(error: ParseError) = Left(error)
         def failure(error: Throwable)     = throw error
       }
-    implicit def Throw[L <: HList, Out](implicit unpack: Unpack.Aux[L, Out]) =
+    implicit def Throw[L <: HList, Out](implicit unpack: Unpack.Aux[L, Out]): DeliveryScheme[L] { type Result = Out } =
       new DeliveryScheme[L] {
         type Result = Out
         def success(result: L)            = unpack(result)
@@ -635,60 +625,5 @@ private[http4s] object Parser {
       var errorMismatches: Int = 0 // the number of times we have already seen a mismatch at >= minErrorIndex
   ) extends ErrorAnalysisPhase {
     def applyOffset(offset: Int) = minErrorIndex -= offset
-  }
-}
-
-private[http4s] object ParserMacros {
-  import scala.reflect.macros.whitebox.Context
-
-  /**
-    * THIS IS NOT PUBLIC API and might become hidden in future. Use only if you know what you are doing!
-    */
-  type RunnableRuleContext[L <: HList] = Context { type PrefixType = Rule.Runnable[L] }
-
-  def runImpl[L <: HList: c.WeakTypeTag](
-      c: RunnableRuleContext[L]
-  )()(scheme: c.Expr[Parser.DeliveryScheme[L]]): c.Expr[scheme.value.Result] = {
-    import c.universe._
-    val runCall = c.prefix.tree match {
-      case q"parboiled2.this.Rule.Runnable[$l]($ruleExpr)" =>
-        ruleExpr match {
-          case q"$p.$r" if p.tpe <:< typeOf[Parser]        => q"val p = $p; p.__run[$l](p.$r)($scheme)"
-          case q"$p.$r($args)" if p.tpe <:< typeOf[Parser] => q"val p = $p; p.__run[$l](p.$r($args))($scheme)"
-          case q"$p.$r[$t]" if p.tpe <:< typeOf[Parser]    => q"val p = $p; p.__run[$l](p.$r[$t])($scheme)"
-          case q"$p.$r[$t]" if p.tpe <:< typeOf[RuleX]     => q"__run[$l]($ruleExpr)($scheme)"
-          case x                                           => c.abort(x.pos, "Illegal `.run()` call base: " + x)
-        }
-      case x => c.abort(x.pos, "Illegal `Runnable.apply` call: " + x)
-    }
-    c.Expr[scheme.value.Result](runCall)
-  }
-
-  /**
-    * THIS IS NOT PUBLIC API and might become hidden in future. Use only if you know what you are doing!
-    */
-  type ParserContext = Context { type PrefixType = Parser }
-
-  def ruleImpl[I <: HList: ctx.WeakTypeTag, O <: HList: ctx.WeakTypeTag](
-      ctx: ParserContext
-  )(r: ctx.Expr[Rule[I, O]]): ctx.Expr[Rule[I, O]] = {
-    import ctx.universe._
-    namedRuleImpl(ctx)(ctx.Expr[String](Literal(Constant(ctx.internal.enclosingOwner.name.decodedName.toString))))(r)
-  }
-
-  def namedRuleImpl[I <: HList: ctx.WeakTypeTag, O <: HList: ctx.WeakTypeTag](
-      ctx: ParserContext
-  )(name: ctx.Expr[String])(r: ctx.Expr[Rule[I, O]]): ctx.Expr[Rule[I, O]] = {
-    val opTreeCtx = new OpTreeContext[ctx.type] { val c: ctx.type = ctx }
-    val opTree    = opTreeCtx.RuleCall(Left(opTreeCtx.OpTree(r.tree)), name.tree)
-    import ctx.universe._
-    val ruleTree = q"""
-      def wrapped: Boolean = ${opTree.render(wrapped = true)}
-      val matched =
-        if (__inErrorAnalysis) wrapped
-        else ${opTree.render(wrapped = false)}
-      if (matched) org.http4s.internal.parboiled2.Rule else null""" // we encode the "matched" boolean as 'ruleResult ne null'
-
-    reify { ctx.Expr[RuleX](ruleTree).splice.asInstanceOf[Rule[I, O]] }
   }
 }

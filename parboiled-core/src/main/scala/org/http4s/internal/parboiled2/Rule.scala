@@ -19,10 +19,10 @@ package org.http4s.internal.parboiled2
 import scala.annotation.unchecked.uncheckedVariance
 import scala.annotation.compileTimeOnly
 import scala.collection.immutable
-import scala.language.experimental.macros
 import org.http4s.internal.parboiled2.support._
 
-private[http4s] sealed trait RuleX
+//private[http4s]
+sealed trait RuleX
 
 /**
   * The general model of a parser rule.
@@ -33,33 +33,10 @@ private[http4s] sealed trait RuleX
   * At runtime there are only two instances of this class which signal whether the rule has matched (or mismatched)
   * at the current point in the input.
   */
-private[http4s] sealed class Rule[-I <: HList, +O <: HList] extends RuleX {
+//private[http4s]
+sealed class Rule[-I <: HList, +O <: HList] extends RuleX with ScalaVersionSpecificRuleMethods[I, O] {
   // Note: we could model `Rule` as a value class, however, tests have shown that this doesn't result in any measurable
   // performance benefit and, in addition, comes with other drawbacks (like generated bridge methods)
-
-  /**
-    * Concatenates this rule with the given other one.
-    * The resulting rule type is computed on a type-level.
-    * Here is an illustration (using an abbreviated HList notation):
-    *   Rule[, A] ~ Rule[, B] = Rule[, A:B]
-    *   Rule[A:B:C, D:E:F] ~ Rule[F, G:H] = Rule[A:B:C, D:E:G:H]
-    *   Rule[A, B:C] ~ Rule[D:B:C, E:F] = Rule[D:A, E:F]
-    */
-  @compileTimeOnly("Calls to `~` must be inside `rule` macro")
-  def ~[I2 <: HList, O2 <: HList](that: Rule[I2, O2])(
-      implicit i: TailSwitch[I2, O @uncheckedVariance, I @uncheckedVariance],
-      o: TailSwitch[O @uncheckedVariance, I2, O2]
-  ): Rule[i.Out, o.Out] = `n/a`
-
-  /**
-    * Same as `~` but with "cut" semantics, meaning that the parser will never backtrack across this boundary.
-    * If the rule being concatenated doesn't match a parse error will be triggered immediately.
-    */
-  @compileTimeOnly("Calls to `~!~` must be inside `rule` macro")
-  def ~!~[I2 <: HList, O2 <: HList](that: Rule[I2, O2])(
-      implicit i: TailSwitch[I2, O @uncheckedVariance, I @uncheckedVariance],
-      o: TailSwitch[O @uncheckedVariance, I2, O2]
-  ): Rule[i.Out, o.Out] = `n/a`
 
   /**
     * Combines this rule with the given other one in a way that the resulting rule matches if this rule matches
@@ -68,14 +45,6 @@ private[http4s] sealed class Rule[-I <: HList, +O <: HList] extends RuleX {
     */
   @compileTimeOnly("Calls to `|` must be inside `rule` macro")
   def |[I2 <: I, O2 >: O <: HList](that: Rule[I2, O2]): Rule[I2, O2] = `n/a`
-
-  /**
-    * Creates a "negative syntactic predicate", i.e. a rule that matches only if this rule mismatches and vice versa.
-    * The resulting rule doesn't cause the parser to make any progress (i.e. match any input) and also clears out all
-    * effects that the underlying rule might have had on the value stack.
-    */
-  @compileTimeOnly("Calls to `unary_!` must be inside `rule` macro")
-  def unary_!(): Rule0 = `n/a`
 
   /**
     * Attaches the given explicit name to this rule.
@@ -125,15 +94,8 @@ private[http4s] sealed class Rule[-I <: HList, +O <: HList] extends RuleX {
 /**
   * THIS IS NOT PUBLIC API and might become hidden in future. Use only if you know what you are doing!
   */
-private[http4s] object Rule extends Rule0 {
-
-  /**
-    * THIS IS NOT PUBLIC API and might become hidden in future. Use only if you know what you are doing!
-    */
-  implicit class Runnable[L <: HList](rule: RuleN[L]) {
-    def run()(implicit scheme: Parser.DeliveryScheme[L]): scheme.Result = macro ParserMacros.runImpl[L]
-  }
-}
+//private[http4s]
+object Rule extends Rule0 with RuleRunnable with ScalaVersionSpecificRuleSyntax
 
 private[http4s] abstract class RuleDSL extends RuleDSLBasics with RuleDSLCombinators with RuleDSLActions
 

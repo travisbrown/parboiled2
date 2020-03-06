@@ -19,7 +19,8 @@ package org.http4s.internal.parboiled2.support
 import org.http4s.internal.parboiled2._
 
 // phantom type, only used for rule DSL typing
-private[http4s] sealed trait RunResult[T] {
+//private[http4s]
+sealed trait RunResult[T] {
   type Out <: RuleX
 }
 

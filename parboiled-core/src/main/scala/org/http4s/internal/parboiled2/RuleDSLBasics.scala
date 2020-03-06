@@ -19,7 +19,7 @@ package org.http4s.internal.parboiled2
 import scala.annotation.compileTimeOnly
 import org.http4s.internal.parboiled2.support._
 
-private[http4s] trait RuleDSLBasics {
+private[http4s] trait RuleDSLBasics extends ScalaVersionSpecificRuleDSLBasics {
 
   /**
     * Matches the given single character.

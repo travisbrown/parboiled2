@@ -18,7 +18,7 @@ package org.http4s.internal.parboiled2
 
 import scala.reflect.ClassTag
 import utest._
-
+/*
 object ReductionTypeSpec extends TestSuite {
 
   sealed trait Foo
@@ -46,3 +46,4 @@ object ReductionTypeSpec extends TestSuite {
 
   def ruleTypeOf[T](f: FooParser => Rule1[T])(implicit tag: ClassTag[T]) = tag.runtimeClass
 }
+*/

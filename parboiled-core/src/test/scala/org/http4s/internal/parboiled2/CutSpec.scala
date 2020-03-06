@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 object CutSpec extends TestParserSpec {
 
   val tests = Tests {
@@ -43,3 +43,4 @@ object CutSpec extends TestParserSpec {
     }
   }
 }
+*/

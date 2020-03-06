@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 object CombinatorSpec extends TestParserSpec {
 
   val tests = Tests {
@@ -265,3 +265,4 @@ object CombinatorSpec extends TestParserSpec {
     }
   }
 }
+*/

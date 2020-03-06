@@ -15,7 +15,7 @@
  */
 
 package org.http4s.internal.parboiled2
-
+/*
 import utest._
 import org.http4s.internal.parboiled2.support._
 
@@ -73,3 +73,4 @@ object ReductionResetSpec extends TestParserSpec {
     }
   }
 }
+*/

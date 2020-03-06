@@ -31,19 +31,19 @@ object CharUtilsSpec extends TestSuite with UTestScalaCheck {
       "hexValue" - forAll(hexChars) {
         case (i, c) => CharUtils.hexValue(c) == i
       }.checkUTest()
-      "numberOfHexDigits" - forAll { l: Long =>
+      "numberOfHexDigits" - forAll { (l: Long) =>
         CharUtils.numberOfHexDigits(l) == java.lang.Long.toHexString(l).length
       }.checkUTest()
-      "upperHexString" - forAll { l: Long =>
+      "upperHexString" - forAll { (l: Long) =>
         CharUtils.upperHexString(l) == java.lang.Long.toHexString(l).toUpperCase
       }.checkUTest()
-      "lowerHexString" - forAll { l: Long =>
+      "lowerHexString" - forAll { (l: Long) =>
         CharUtils.lowerHexString(l) == java.lang.Long.toHexString(l)
       }.checkUTest()
-      "numberOfDecimalDigits" - forAll { l: Long =>
+      "numberOfDecimalDigits" - forAll { (l: Long) =>
         CharUtils.numberOfDecimalDigits(l) == java.lang.Long.toString(l).length
       }.checkUTest()
-      "signedDecimalString" - forAll { l: Long =>
+      "signedDecimalString" - forAll { (l: Long) =>
         CharUtils.signedDecimalString(l) == java.lang.Long.toString(l)
       }.checkUTest()
     }

@@ -18,7 +18,7 @@ package org.http4s.internal.parboiled2
 
 import scala.util.{Success, Try}
 import utest._
-
+/*
 object RunningSpec extends TestSuite {
 
   class TestParser(val input: ParserInput) extends Parser {
@@ -56,3 +56,4 @@ object RunningSpec extends TestSuite {
 
   }
 }
+*/

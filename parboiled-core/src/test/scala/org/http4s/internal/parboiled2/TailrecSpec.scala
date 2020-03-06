@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 // test verifying the effectiveness of our workaround for https://issues.scala-lang.org/browse/SI-8657
 object TailrecSpec extends TestParserSpec {
 
@@ -41,3 +41,4 @@ object TailrecSpec extends TestParserSpec {
     }
   }
 }
+*/

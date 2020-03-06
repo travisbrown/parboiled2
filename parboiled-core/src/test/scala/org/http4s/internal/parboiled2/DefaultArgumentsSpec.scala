@@ -19,7 +19,7 @@ package org.http4s.internal.parboiled2
 import utest._
 
 import scala.util.Success
-
+/*
 object DefaultArgumentsSpec extends TestSuite {
 
   case class A(a: Int = 0, b: Int = 1)
@@ -36,3 +36,4 @@ object DefaultArgumentsSpec extends TestSuite {
     }
   }
 }
+*/

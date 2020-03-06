@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import org.http4s.internal.parboiled2.support._
-
+/*
 //// pure compile-time-only test
 class DSLTest(val input: ParserInput) extends Parser {
 
@@ -62,3 +62,4 @@ class DSLTest(val input: ParserInput) extends Parser {
   def DigitOptional_Checked: Rule1[Option[Int]] = DigitOptional
   def DigitOptional                             = rule { optional(Digit) }
 }
+*/

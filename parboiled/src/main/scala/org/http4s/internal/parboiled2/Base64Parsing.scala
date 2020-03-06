@@ -47,6 +47,8 @@ private[http4s] trait Base64Parsing { this: Parser =>
     */
   def base64CustomBlock: Rule1[Array[Byte]] = base64(customAlphabet, Base64.custom().fillChar, customBlockDecoder)
 
+  import org.http4s.internal.parboiled2.support._
+
   /**
     * Parses a BASE64-encoded string with the given alphabet and decodes it onto the value
     * stack using the given codec.
@@ -60,7 +62,7 @@ private[http4s] trait Base64Parsing { this: Parser =>
     rule {
       oneOrMore(alphabet) ~ run {
         decoder(input.sliceCharArray(start, cursor)) match {
-          case null  => MISMATCH
+          case null  => MISMATCH[HNil, Array[Byte] :: HNil]
           case bytes => push(bytes)
         }
       }
@@ -72,7 +74,7 @@ private[http4s] trait Base64Parsing { this: Parser =>
     rule {
       oneOrMore(alphabet) ~ zeroOrMore(ch(fillChar)) ~ run {
         decoder(input.sliceCharArray(start, cursor)) match {
-          case null  => MISMATCH
+          case null  => MISMATCH[HNil, Array[Byte] :: HNil]
           case bytes => push(bytes)
         }
       } ~ EOI

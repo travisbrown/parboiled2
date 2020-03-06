@@ -19,7 +19,8 @@ package org.http4s.internal.parboiled2
 import scala.annotation.tailrec
 import java.nio.ByteBuffer
 
-private[http4s] trait ParserInput {
+//private[http4s]
+trait ParserInput {
 
   /**
     * Returns the character at the given (zero-based) index.

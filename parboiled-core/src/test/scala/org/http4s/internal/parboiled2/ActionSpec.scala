@@ -18,7 +18,7 @@ package org.http4s.internal.parboiled2
 
 import org.http4s.internal.parboiled2.support._
 import utest._
-
+/*
 object ActionSpec extends TestParserSpec {
 
   val tests = Tests {
@@ -200,3 +200,4 @@ object ActionSpec extends TestParserSpec {
     }
   }
 }
+*/

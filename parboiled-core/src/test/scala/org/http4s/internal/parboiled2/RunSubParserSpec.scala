@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 object RunSubParserSpec extends TestParserSpec {
 
   class SubParser(val input: ParserInput) extends Parser {
@@ -56,3 +56,4 @@ object RunSubParserSpec extends TestParserSpec {
     }
   }
 }
+*/

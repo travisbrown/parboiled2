@@ -20,7 +20,7 @@ package org.http4s.internal.parboiled2
 import org.specs2.execute.Typecheck.{apply => illTyped}
 
 import support._
-
+/*
 //// pure compile-time-only test
 class VarianceSpec {
 
@@ -92,3 +92,4 @@ class VarianceSpec {
 
   def test(x: Any): Unit = () // prevent "a pure expression does nothing in statement position" warnings
 }
+*/

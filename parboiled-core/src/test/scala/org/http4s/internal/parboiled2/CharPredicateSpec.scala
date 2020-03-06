@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 object CharPredicateSpec extends TestSuite {
 
   val tests = Tests {
@@ -82,3 +82,4 @@ object CharPredicateSpec extends TestSuite {
     }
   }
 }
+*/

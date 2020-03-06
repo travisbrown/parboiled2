@@ -17,7 +17,7 @@
 package org.http4s.internal.parboiled2
 
 import utest._
-
+/*
 object CustomCharAndStringExpansionSpec extends TestParserSpec {
 
   val tests = Tests {
@@ -48,3 +48,4 @@ object CustomCharAndStringExpansionSpec extends TestParserSpec {
     }
   }
 }
+*/
